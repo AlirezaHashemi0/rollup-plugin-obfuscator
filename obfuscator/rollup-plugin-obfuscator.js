@@ -8,7 +8,7 @@ const fs = require('fs');
 // ================================================
 // CONFIG
 // ================================================
-const rawConfig = fs.readFileSync('./obfuscator/jsobfuscator_config.json');
+const rawConfig = fs.readFileSync('./obfuscator/jsobfuscator.json');
 const config = JSON.parse(rawConfig);
 // ================================================
 // PROCESS
@@ -21,12 +21,16 @@ export default (options = {}) => {
   const filter = createFilter(options.include, options.exclude);
 
   return {
-    name: '@rollup/obfuscator',
+    name: '@rollup/plugin-obfuscator',
     transform: (code, id) => {
       if (!filter(id)) return null;
+      options.inputFileName = id;
       const obfResult = obfuscator.obfuscate(code, options);
-      return obfResult.getObfuscatedCode();
+      return {
+        code: obfResult.getObfuscatedCode(),
+        map: obfResult.getSourceMap(),
+      };
     },
   };
-}
+};
 // ================================================
